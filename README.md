@@ -116,7 +116,7 @@ Los testing de **TestBed** se basan en **SCAM**:
 > Para saber más sobre SCAM:
 > https://medium.com/marmicode/your-angular-module-is-a-scam-b4136ca3917b
 
-![Captura de pantalla 2023-07-29 a las 14.41.26.png](..%2F..%2F..%2FDesktop%2FCaptura%20de%20pantalla%202023-07-29%20a%20las%2014.41.26.png)
+<img width="404" alt="Captura de pantalla 2023-07-29 a las 14 28 57" src="https://github.com/Bluubi/Anote/assets/125690321/c7f6f30a-bc53-4a3a-8adc-305db151865b">
 
 > Nota importante: Aunque **TestBed** funcione como **SCAM**, **no significa** que tu aplicación tenga que estar construida siguiendo esta arquitectura.
 > Tu componente (hablemos en este caso de ``HeaderComponent``) puede estar siendo **importado** dentro de un módulo **que no es** ``HeaderModule``, sino que a lo
@@ -422,7 +422,7 @@ pintar ese dato.
 
 Tengamos en cuenta que Angular funciona más o menos así:
 
-![Captura de pantalla 2023-07-29 a las 22.05.11.png](..%2F..%2F..%2FDesktop%2FCaptura%20de%20pantalla%202023-07-29%20a%20las%2022.05.11.png)
+<img width="721" alt="Captura de pantalla 2023-07-29 a las 22 05 11" src="https://github.com/Bluubi/Anote/assets/125690321/7308e648-8bd9-479c-805f-60c8edbbfd63">
 
 Por tanto, necesitamos **disparar** la detección de cambios para que Angular **capte** el binding.
 
