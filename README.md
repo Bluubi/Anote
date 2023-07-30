@@ -1,6 +1,27 @@
 # Testing de componentes con TestBed
 
+1. [Introducción](#id1)
+
+    1.1. [Entonces, ¿por qué TestBed y no Spectator?](#id1.1)
+
+2. [Pero antes, ¿qué es TestBed?](#id2)
+
+3. [Configurar el módulo del componente a testear](#id3)
+
+    3.1 [Creación del componente](#id3.1)
+
+    3.2 [Dos partes de una: fixture y component](#id3.2)
+
+4. [Primeros pasos](#id4)
+
+    4.1 [Iniciar el ciclo de vida del componente](#id4.1)
+
+    4.2 [Convirtiendo nuestro test unitario en un test de integración](#id4.2)
+
 ## 1. Introducción
+
+<div id='id1' />
+
 
 La primera pregunta a responder sería: **¿Por qué la necesidad de este tutorial?**.
 Necesidad ninguna, porque creo que en internet es posible encontrar mejores y guías más completas
@@ -18,7 +39,11 @@ se han encontrado con **algún problema que no hayan sabido afrentar**. Posiblem
 en este tutorial, pero al menos espero poder ofrecer unos conocimientos **básicos y necesarios**, y algo más profundos, que ayuden a solucionar
 esas posibles complicaciones futuras.
 
+
 ### 1.1 Entonces, ¿por qué TestBed y no Spectator?
+
+
+<div id='id1.1' />
 
 TestBed tuvo una **gran actualización** durante la versión de **Angular 14** que no solo **mejoró** notablemente su legibilidad, sino que sigue la
 **misma estela** de Spectator. El "problema" con Spectator es que su mantenimiento no está siendo regular, lo cual nos supone algunos riesgos. En el
@@ -32,13 +57,21 @@ Dicho esto, ¡empecemos!
 
 ## 2. Pero antes, ¿qué es TestBed?
 
+<div id='id2' />
+
+
 TestBed es una **librería** incluida dentro del framework de **Angular** que nos permite hacer
 **tests de integración** con nuestros componentes. Eso significa que podremos comprobar que tanto la parte de la **UI**
 como la parte de **funcionalidad** funcionan correctamente.
 
 > Fuente oficial: https://angular.io/api/core/testing/TestBed
 
+
 ### 2.1 Entendiendo cómo funciona TestBed
+
+
+<div id='id2.1' />
+
 
 **TestBed** nos permite **montar nuestro componente** tal cual es montado por el propio framework.
 Es decir; pongamos por caso el ejemplo de la feature `header`. Esta feature está compuesta por
@@ -67,7 +100,11 @@ instrucción que puede que nos llame la atención:
 
 ¿Qué significa esto?
 
+
 ## 3. Configurar el módulo del componente a testear
+
+
+<div id='id3' />
 
 Los testing de **TestBed** se basan en **SCAM**:
 
@@ -143,7 +180,9 @@ Como dijimos anteriormente, un componente está compuesto esencialmente por **te
 
 Por tanto, tenemos el primer paso definido: configurar el módulo del componente. Ahora, creemos el componente.
 
+
 #### 3.0.1 ¿Es necesario hacer el test asíncrono?
+
 
 Bajo mi propia experiencia, **no**. Es cierto que Angular, en su **documentación oficial**, recomienda encapsularlo dentro de la instrucción ``beforeEach`` y hacerlo asíncrono,
 pero en mi propia experiencia utilizando TestBed, esto no ha supuesto ningún problema ni a nivel de rendimiento ni a nivel de 
@@ -162,6 +201,9 @@ realización de testing, por lo que evitaremos utilizar esta encapsulación.
 Bien, continuemos con la **creación del componente**:
 
 ### 3.1 Creación del componente
+
+<div id='id3.1' />
+
 
 La instrucción que crea el componente es la siguiente: ``TestBed.createComponent(HeaderComponent)``
 Esta instrucción tan solo nos **crea** la **instancia** del componente que vamos a testear. Este primer tutorial lo basaremos
@@ -198,7 +240,12 @@ A estas alturas tenemos, por tanto, algo sobre lo que trabajar: un _wrapper_ de 
 Para seguir con la estructura habitual de los testing, lo que haremos será agrupar las dos primeras funciones
 que hemos visto que nos permiten crear el componente a testear en nuestra función ``setup``, y empecemos con lo siguiente.
 
+
 ### 3.2  Dos partes de una: fixture y component
+
+
+<div id='id3.2' />
+
 
 Como decíamos anteriormente, hemos simplificado un poco la manera en la que Angular nos inicializa los tests, y lo hemos agrupado
 dentro de una estructura más comprensible para nosotros. Y ha quedad así:
@@ -232,9 +279,16 @@ Por otro lado, seguimos manteniendo ``fixture``, pues será **lo que nos permita
 
 Una vez tenemos ya **montado** nuestro componente, procedamos a entender los primeros pasos de testing con TestBed.
 
+
 ## 4. Primeros pasos
 
+<div id='id4' />
+
+
 ### 4.1 Iniciar el ciclo de vida del componente
+
+
+<div id='id4.1' />
 
 El **ciclo de vida** del componente, dentro del entorno de TestBed, se inicia **automáticamente** a la orden de ``createComponent``.
 Sin embargo, para que **detecte** cualquier cambio realizado , necesitamos disparar **manualmente** la siguiente acción:
