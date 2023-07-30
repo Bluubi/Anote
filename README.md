@@ -116,8 +116,6 @@ Los testing de **TestBed** se basan en **SCAM**:
 > Para saber más sobre SCAM:
 > https://medium.com/marmicode/your-angular-module-is-a-scam-b4136ca3917b
 
-<img width="404" alt="Captura de pantalla 2023-07-29 a las 14 28 57" src="https://github.com/Bluubi/Anote/assets/125690321/c7f6f30a-bc53-4a3a-8adc-305db151865b">
-
 > Nota importante: Aunque **TestBed** funcione como **SCAM**, **no significa** que tu aplicación tenga que estar construida siguiendo esta arquitectura.
 > Tu componente (hablemos en este caso de ``HeaderComponent``) puede estar siendo **importado** dentro de un módulo **que no es** ``HeaderModule``, sino que a lo
 > mejor es ``AppModule``. Esto significa que Angular **solo va a entender aquellos elementos que estén dentro de tu componente HeaderComponent**. Para él, ``HeaderComponent`` es
