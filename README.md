@@ -18,7 +18,27 @@
 
     4.2 [Convirtiendo nuestro test unitario en un test de integración](#id4.2)
 
+<hr>
+
+### Nuevo!
+
+5. [Testing de dos o más componentes](#id5)
+
+  5.1 [Replicando el comportamiento de nuestro componente a testear](#id5.1)
+
+  5.2 [Montando el componente ``PostComponent``](#id5.2)
+
+      5.2.1 [Testeando el componente tal cual está](#5.2.1)
+
+      5.2.2 [Probando escenarios: sobreescribir propiedades internas.](#id5.2.2)
+
+<hr>
+
+<hr>
+
 ## 1. Introducción
+
+<hr>
 
 <div id='id1' />
 
@@ -39,6 +59,13 @@ se han encontrado con **algún problema que no hayan sabido afrentar**. Posiblem
 en este tutorial, pero al menos espero poder ofrecer unos conocimientos **básicos y necesarios**, y algo más profundos, que ayuden a solucionar
 esas posibles complicaciones futuras.
 
+#### Nota para el lector
+
+> Esta "guía" (si se le puede llamar así) se ha hecho con la intención de ayudar al usuario a trabajar sobre **una aplicación ya hecha**. Para que le resulte más amena
+> y fácil de seguir, se dividirán los conceptos en diferentes **tags versionadas** (que se notificarán en cada punto) para que pueda hacer ya los tests sobre **una** (o unas) **feature/s** existente/s.
+> Para el primer caso, dado que será un tutorial más explicativo e introductorio, el test **ya vendrá hecho**, pero en las consecuentes versiones **no existirá el fichero de testing**. Sin embargo,
+> **sí existirá una versión con los tests ya resueltos**, por si acaso el usuario así lo deseara.
+
 
 ### 1.1 Entonces, ¿por qué TestBed y no Spectator?
 
@@ -57,6 +84,8 @@ Dicho esto, ¡empecemos!
 
 ## 2. Pero antes, ¿qué es TestBed?
 
+<hr>
+
 <div id='id2' />
 
 
@@ -68,6 +97,8 @@ como la parte de **funcionalidad** funcionan correctamente.
 
 
 ### 2.1 Entendiendo cómo funciona TestBed
+
+<hr>
 
 
 <div id='id2.1' />
@@ -102,6 +133,8 @@ instrucción que puede que nos llame la atención:
 
 
 ## 3. Configurar el módulo del componente a testear
+
+<hr>
 
 
 <div id='id3' />
@@ -179,7 +212,7 @@ Como dijimos anteriormente, un componente está compuesto esencialmente por **te
 Por tanto, tenemos el primer paso definido: configurar el módulo del componente. Ahora, creemos el componente.
 
 
-#### 3.0.1 ¿Es necesario hacer el test asíncrono?
+####  ¿Es necesario hacer el test asíncrono?
 
 
 Bajo mi propia experiencia, **no**. Es cierto que Angular, en su **documentación oficial**, recomienda encapsularlo dentro de la instrucción ``beforeEach`` y hacerlo asíncrono,
@@ -345,6 +378,8 @@ a la prop ``title`` contiene **realmente** el texto esperado.
 
 ### 4.2 Convirtiendo nuestro test unitario en un test de integración
 
+<div id='id4.2' />
+
 
 Como dijimos anteriormente, el test anterior **solo** esta testeando la parte lógica e ignorando la template.
 Nuestra template es muy sencilla:
@@ -403,7 +438,6 @@ mediante la instrucción ``querySelector``.
 > otro punto para no enredar mucho más este inicio.
 
 
-
 Sin embargo, si corremos el test, veremos que **falla**. Y nos dice lo siguiente:
 
 ````
@@ -455,3 +489,315 @@ ello. Solo así podremos comprobar los efectos del componente sobre la template.
 4. Podemos rescatar elementos de la template gracias a ``fixture.nativeElement``, que nos permite acceder a ella, y seleccionar
 cualquier elemento gracias a la instrucción ``querySelector``.
 
+<hr>
+
+## 5. Testing de dos o más componentes
+
+<div id='id5' />
+
+En el punto [4.2 Convirtiendo nuestro test unitario en un test de integración](#id4.2), hablamos de que si **tan solo** testeábamos la parte lógica
+y nos desentendíamos de la parte de la template, realmente nuestro test era un **test unitario**. Una de las ventajas (o desventajas, depende de cómo lo veamos)
+que nos provee Angular es **la posibilidad de testear un conjunto de componentes trabajando en armonía**.
+
+Para la continuación de este tutorial, hemos creado una **nueva feature** muy simple, llamada ```PostComponent```. Si vemos en su interior, está compuesta por una única
+prop llamada `post` que tiene un array de posts:
+
+````typescript
+
+ posts = [{
+    title: 'Tarea pendiente',
+    content: 'Crear el primer test de integración entre dos componentes de Angular'
+  }]
+
+````
+
+> Nota: Podríamos tipar el objeto, es cierto, pero dado que estamos realizando una aplicación relativamente sencilla con el único propósito de aprender
+> TestBed, evitaremos añadir más complejidad de la necesaria.
+
+Y su template es muy sencilla:
+
+````html
+<ng-container *ngFor="let post of posts">
+  <h1 class="title">{{ post.title}}</h1>
+  <p class="content"> {{ post.content}} </p>
+</ng-container>
+````
+
+Ahora, en la template de ``board.component.html``, vemos que se llama al selector ``<app-post>``, por lo que **pintará** el (o los) post/s que tengamos en nuestro
+array de ``PostComponent``.
+
+Empecemos por el primer componente: ``PostComponent``.
+
+## 5.1 Replicando el comportamiento de nuestro componente a testear
+
+<div id='id5.1' />
+
+
+No me quiero repetir, pero recapitulemos una vez más lo que hace ``PostComponent``:
+
+1. Tiene una prop declara llamada ``posts`` compuesta por un array de objetos.
+2. En su template, pinta esta array de objetos
+
+De momento, eso es todo. Lo que tenemos que asegurarnos es de dos cosas:
+
+1. Que si existen **uno o más posts**, los pinte en la template.
+2. Que si **no existe** ningún post, no pinte ninguno.
+
+Esto va por gustos, pero cuando se me presenta un escenario donde **espero** varias posibles casuísticas, dependiendo de lo que
+el **test de aceptación** (si es que hay) indique, desarrollo el test de una manera u otra. En este caso, **nosotros mismos** vamos a decidir
+cuáles son nuestros **test de aceptación**, y serán los dos primeros puntos.
+
+Bien, una vez sabido esto, empecemos por el principio.
+
+## 5.2 Montando el componente ``PostComponent``
+
+<div id='id5.2' />
+
+
+Recordemos que **el primer paso** de todo test realizado con **TestBed** es **configurar** el módulo de nuestro
+componente a testear:
+
+````typescript
+function sut() {
+  TestBed.configureTestingModule({
+    imports: [PostComponent]
+  });
+}
+````
+
+> Recuerda que, en la configuración del testing, utilizamos la instrucción ``imports`` por tratarse de un componente ``standalone``.
+> Si no fuera así, deberíamos utilizar ``declarations``
+
+¡Un momento! En nuestro componente, se está utilizando una **directiva** de Angular, concretamente la de **ngFor**. ¿Por qué **no es necesario** que la importemos en nuestro módulo de TestBed?
+Esto es por **cómo funciona internamente Angular**. Dado que estamos importando el componente ``PostComponent``, éste está **importando de manera recursiva sus propias dependencias**. Es decir, nosotros **no estamos emulando** un componente, sino
+**importándolo como tal**, con todas y cada una de sus **propias importaciones**. Así que ya ha sido nuestro ```PostComponent``` el encargado de importar el módulo necesario para que la directiva
+**ngFor** funcione.
+
+Bien, aclarado este punto, continuemos.
+
+Creamos nuestra función ``sut``
+
+> Nota! No tienes _por qué_ crear un **sut**. Esto es por convención, pero puedes configurar el testing module tal y como indica Angular (mira el punto [## 3. Configurar el módulo del componente a testear
+](#id3) para más información si así lo prefieres).
+
+Y creamos el componente a testear:
+
+````typescript
+  const fixture = TestBed.createComponent(PostComponent);
+````
+ 
+Ya tenemos nuestro wrapper hecho. Ahora, necesitamos coger la instancia del componente:
+
+```typescript
+  const component = fixture.componentInstance;
+```
+
+Y devolvemos todo. Nuestro ```sut``` queda así:
+
+````typescript
+function sut() {
+  TestBed.configureTestingModule({
+    imports: [PostComponent]
+  });
+
+  const fixture = TestBed.createComponent(PostComponent);
+  const component = fixture.componentInstance;
+
+  return { fixture, component }
+}
+````
+
+Ahora pasemos a realizar el test y el primero paso: **Comprobar que lo que tenemos actualmente declarado en el componente se renderiza correctamente**.
+
+
+### 5.2.1 Testeando el componente tal cual está
+
+<div id='id5.2.1' />
+
+
+Aquí es posible que te surja alguna duda, como, por ejemplo: **¿Y qué nombre le pongo al test?**
+
+Hay un concepto que se utiliza mucho en términos de front, que se llama **render**. Con ese términos sabemos que **estamos asociando** una parte
+**lógica** a una parte **visual**: estamos **esperando** que _algo_ declarado **por detrás** sea **mostrado visualmente**. Un posible nombre para el test
+podría ser este:
+
+````typescript
+it('should render posts', () => { ... })
+````
+
+> Nota: Por supuesto eres libre de poner el nombre que creas que mejor se ajusta a la intencionalidad del test :)
+
+Ahora pasemos al siguiente punto: **¿y cómo lo compruebo?**
+
+Bien, ¿recuerdas que en el punto [### 4.2 Convirtiendo nuestro test unitario en un test de integración](#id4.2) hablamos de que existe un
+**primer ciclo de vida** (por así decirlo) que se **dispara** en el momento en el que se **construye** el componente? (``TestBed.createComponent```).
+Significa que, en el momento en que incluyamos la siguiente instrucción dentro de nuestro test:
+
+`````typescript
+it('should render posts', () => {
+  const { fixture } = sut();
+})
+`````
+
+El **ciclo de vida del componente iniciará**. Sin embargo, eso no significa que **la template** se haya montado. Recordemos que, para ello
+precisamos de la siguiente instrucción:
+
+``fixture.detectChanges()``
+
+Ahora, pasemos al siguiente paso: **comprobar que, efectivamente, tenemos renderizado los posts**.
+
+
+````typescript
+  it('should render posts', () => {
+    const { fixture } = sut();
+
+    fixture.detectChanges();
+
+    const title = fixture.nativeElement.querySelector('.title') as HTMLHeadElement;
+    const content = fixture.nativeElement.querySelector('.content') as HTMLParagraphElement;
+
+    expect(title.textContent).toContain('Tarea pendiente');
+    expect(content.textContent).toContain('Crear el primer test de integración entre dos componentes de Angular');
+  })
+````
+
+Recuerda, los pasos que debemos seguir son:
+
+1. Montar el módulo del componente a testear (ya lo hemos montado anteriormente).
+2. Montar el propio componente (también hecho anteriormente).
+3. Disparar el **ciclo de vida** de los componentes de Angular para que **detecte** los bindings de la template.
+
+Y una vez hemos hecho eso, podemos hacer los siguientes pasos:
+
+- Coger los elementos sobre los que queremos comprobar algo:
+
+```typescript
+const title = fixture.nativeElement.querySelector('.title') as HTMLHeadElement;
+const content = fixture.nativeElement.querySelector('.content') as HTMLParagraphElement;
+```
+
+- Comprobar que **el texto** coincide con lo que esperamos (que es lo definido por el componente):
+
+```typescript
+    expect(title.textContent).toContain('Tarea pendiente');
+    expect(content.textContent).toContain('Crear el primer test de integración entre dos componentes de Angular');
+```
+
+> Fuente oficial: https://angular.io/guide/testing-components-scenarios
+
+El test **pasa** correctamente. Pero, ¿y si tenemos más de un objeto en nuestro array de posts? ¿Podemos _simular_ ese 
+escenario? La respuesta es **sí**.
+
+### 5.2.2 Probando escenarios: sobreescribir propiedades internas.
+
+<div id='id5.2.2' />
+
+
+Hay algo que es importante de aclarar en este punto: estamos **sobreescribiendo una propiedad interna** del componente. No 
+es recibida mediante input ni modificada mediante **ningún otro hecho**. Cuando se den esos escenarios, analizaremos **cómo** hay
+que hacerlo de la manera correcta, pero en este caso, que tenemos un post hecho **a pelo** y que, simplemente, queremos comprobar que
+se generen el número de posts de acuerdo a lo que haya en nuestro array, nos servirá hacerlo de esta manera.
+
+Para poder modificar esta prop, solamente necesitamos **rescatar** el objeto **component** que **no hicimos** en el primer test:
+
+`````typescript
+    const { fixture, component } = sut();
+`````
+
+> Recordatorio: ```fixture``` es el wrapper del componente, pero ```component``` es el **componente en sí mismo**, el que tiene acceso a sus props, métodos, etc.
+
+Entonces, si utilizamos ```component```... :
+
+````
+    component.posts
+````
+
+Veremos que **podemos acceder a la prop**. Ahora podemos modificarla con, por ejemplo, esto:
+
+````typescript
+    component.posts = [{
+      title: 'Awesome title',
+      content: 'Awesome content'
+    }, 
+      {
+        title: 'Another awesome title',
+      content: 'Another awesome content'
+      }];
+````
+
+Si lanzamos el test, veremos que **falla**, lo cual es bueno, porque significa que ha cogido los cambios:
+
+````typescript
+Expected substring: "Tarea pendiente"
+Received string:    "Awesome title"
+````
+
+Ahora solo tenemos que ajustar lo deseado por el test. Primero de todo, el título:
+
+`` should render all posts ``
+
+Ahora, vamos a probar que se hayan renderizado **el número correcto de elementos**. Lo primero es cambiar tanto el **tipo de selector** que debemos utilizar como el tipado de lo que estamos recogiendo.
+**A fin de cuentas, son un array de elementos**
+
+````typescript
+    const title = fixture.nativeElement.querySelectorAll('.title') as HTMLHeadElement[];
+    const content = fixture.nativeElement.querySelectorAll('.content') as HTMLParagraphElement[];
+````
+
+> Nota: fíjate que hemos sustituido ``querySelector`` por ``querySelectorAll``
+
+Ahora, podemos comprobar que **el número de elementos renderizados concuerda con el número de posts**:
+
+````typescript
+    expect(title.length).toBe(2)
+    expect(content.length).toBe(2)
+````
+
+Y, a continuación, que el contenido de cada uno de ellos es correcto:
+
+`````typescript
+
+     expect(title[0].textContent).toContain('Awesome title');
+     expect(title[1].textContent).toContain('Another awesome title');
+     expect(content[0].textContent).toContain('Awesome content');
+     expect(content[1].textContent).toContain('Another awesome content');
+     
+`````
+
+El test, al completo, quedaría así:
+
+
+````typescript
+
+  it('should render all posts', () => {
+    const { fixture, component } = sut();
+
+    component.posts = [{
+      title: 'Awesome title',
+      content: 'Awesome content'
+    },
+      {
+        title: 'Another awesome title',
+      content: 'Another awesome content'
+      }];
+
+
+    fixture.detectChanges();
+
+    const title = fixture.nativeElement.querySelectorAll('.title') as HTMLHeadElement[];
+    const content = fixture.nativeElement.querySelectorAll('.content') as HTMLParagraphElement[];
+
+    expect(title.length).toBe(2)
+    expect(content.length).toBe(2)
+    
+     expect(title[0].textContent).toContain('Awesome title');
+     expect(title[1].textContent).toContain('Another awesome title');
+     expect(content[0].textContent).toContain('Awesome content');
+     expect(content[1].textContent).toContain('Another awesome content');
+  })
+````
+
+Entonces, en este nuevo punto hemos podido comprobar **cómo hacer un test de integración** al completo.
+
+> Nota: Estos tests **distan mucho** de la manera en la que **realmente** terminaremos testeando nuestros componentes, pero son perfectos
+> para que vayamos familiarizándonos con las herramientas de TestBed, y entendiendo su manera de funcionar.
