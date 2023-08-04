@@ -1,6 +1,11 @@
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {NgFor} from '@angular/common';
 
+
+export interface Posts {
+  title: string,
+  content: string,
+}
 @Component({
   selector: 'app-post',
   standalone: true,
@@ -10,9 +15,7 @@ import {NgFor} from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PostComponent {
-  posts = [{
-    title: 'Tarea pendiente',
-    content: 'Crear el primer test de integración entre dos componentes de Angular'
-  }]
+
+  @Input() posts!: Posts[];
 
 }

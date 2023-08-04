@@ -18,19 +18,25 @@
 
     4.2 [Convirtiendo nuestro test unitario en un test de integración](#id4.2)
 
+5. [Testing de dos o más componentes](#id5)
+
+    5.1 [Replicando el comportamiento de nuestro componente a testear](#id5.1)
+
+    5.2 [Montando el componente PostComponent](#id5.2)
+
+    5.2.1 [Testeando el componente tal cual está](#5.2.1)
+
+    5.2.2 [Probando escenarios: sobreescribir propiedades internas.](#id5.2.2)
+
 <hr>
 
 ### Nuevo!
 
-5. [Testing de dos o más componentes](#id5)
+5.3 [Test de props como inputs](#id5.3)
 
-  5.1 [Replicando el comportamiento de nuestro componente a testear](#id5.1)
+5.4 [Un nuevo enfoque: Testeando con un HostComponent](#id5.4)
 
-  5.2 [Montando el componente ``PostComponent``](#id5.2)
-
-      5.2.1 [Testeando el componente tal cual está](#5.2.1)
-
-      5.2.2 [Probando escenarios: sobreescribir propiedades internas.](#id5.2.2)
+  5.4.1 [Cambiando el punto de vista: Viéndolo _desde_ el padre](#id5.4.1)
 
 <hr>
 
@@ -801,3 +807,153 @@ Entonces, en este nuevo punto hemos podido comprobar **cómo hacer un test de in
 
 > Nota: Estos tests **distan mucho** de la manera en la que **realmente** terminaremos testeando nuestros componentes, pero son perfectos
 > para que vayamos familiarizándonos con las herramientas de TestBed, y entendiendo su manera de funcionar.
+
+
+## 5.3 Test de props como inputs
+
+<div id='id5.3' />
+
+Hemos testeado el componente de ``PostComponent`` asumiendo que las ``props`` las tenía cargadas él mismo. Pero, ¿y si vienen desde fuera?
+Entonces la manera de hacer el testing cambia. Y, además, **cambia bastante**. ¡Atención!
+
+## 5.4 Un nuevo enfoque: Testeando con un HostComponent
+
+<div id='id5.4' />
+
+
+Si repasamos el testing de ```PostComponent```, vemos que el ``createComponent`` se realizó sobre ``PostComponent``:
+
+````typescript
+const fixture = TestBed.createComponent(PostComponent);
+````
+
+Presta atención, porque **será esto lo que cambiará**.
+
+Tenemos que tener en cuenta que la estructura de nuestro componente ``PostComponent`` ha cambiado:
+
+````typescript
+@Component({selector: 'app-post'})
+export class PostComponent {
+
+  @Input() posts!: Posts[];
+
+}
+````
+
+Las propiedades **ya no están definidas desde el propio componente**, sino que **nos llegarán desde fuera**. Eso significa
+que nuestra manera de enfocar el test **también tiene que cambiar**: ya no crearemos el test sobre ``PostComponent``, sino sobre un ``HostComponent`` que **replicará**
+el **padre** del componente a testear.
+
+`````typescript
+  const fixture = TestBed.createComponent(HostComponent);
+`````
+
+Menudo lío, ¿verdad?. Veamos si somos capaces de ir poco a poco para entenderlo.
+
+### 5.4.1 Cambiando el punto de vista: Viéndolo _desde_ el padre.
+
+<div id='id5.4.1' />
+
+Veámoslo por un momento según funciona Angular. Tenemos el un componente que es el padre:
+
+````typescript
+@Component({selector: 'app-host', template: `<app-child [value]='foo'></app-child>`})
+export class HostComponent {
+}
+````
+
+El componente padre está invocando a un componente hijo: ``ChildComponent``
+
+````typescript
+@Component({selector: 'app-child', template: `<p>{{value}}</p>`})
+export class ChildComponent {
+    @Input() value: any
+}
+````
+
+Como vemos, el hijo _espera_ recibir por ``input`` un valor, el que sea. Si lo viéramos en acción, lo que veríamos en
+nuestro ``DOM`` sería:
+
+`````
+ <app-host ng-reflect-value="[object Object]">
+      <p> Foo </h1>
+ </app-host>
+
+`````
+
+Es decir, que **es el padre quien está renderizando al hijo**. Por ello, el componente que tenemos que **crear** es **un padre**; porque nos servirá de **puente** para comprobar
+que nuestro verdadero interés (el componente hijo) recibe correctamente sus valores.
+
+Aquí tenemos dos opciones: 
+
+1. Crearnos un ``HostComponent`` ficticio que cumpla con las condiciones que necesitamos. Es decir:
+
+
+````typescript
+@Component({
+  template: `<app-post [posts]="posts"> </app-post>`,
+  standalone: true,
+  imports: [PostComponent]
+})
+class HostComponent {
+  posts = [{
+    title: 'Tarea pendiente',
+    content: 'Crear el primer test de integración entre dos componentes de Angular'
+  }]
+}
+
+````
+A nivel del test, nos creamos un componente padre que sea casi una **réplica** del componente original (en este caso, una réplica de ``BoardComponent`)
+
+Y configuramos el test **desde el padre**:
+
+````typescript
+function sut() {
+  TestBed.configureTestingModule({
+    imports: [HostComponent, PostComponent]
+  });
+
+  const fixture = TestBed.createComponent(HostComponent);
+
+  const component = fixture.componentInstance;
+
+  return { fixture, component }
+}
+````
+
+> ¡Atención! ¿Te has fijado en que **hemos importado los dos componentes**, tanto el padre como el hijo? **Recordemos**; estamos **replicando** cómo funciona
+> Angular, y estamos **creando** un módulo. Si ese módulo no tiene conocimiento del componente que quiere utilizar, **se quejará** (y con razón) de no conocerle.
+
+
+2. Dependiendo de la **complejidad** del padre, utilizar **el padre original** para realizar el test:
+
+`````typescript
+function sut() {
+  TestBed.configureTestingModule({
+    imports: [BoardComponent, PostComponent]
+  });
+
+  const fixture = TestBed.createComponent(BoardComponent);
+
+  const component = fixture.componentInstance;
+
+  return { fixture, component }
+}
+`````
+Como en este caso nuestro **padre** es muy sencillo, le utilizaremos a él. Y, si te fijas, **el resto del test no ha cambiado**. No hemos tenido que modificar
+el test ni su manera de funcionar. En todo caso, dado que hemos cambiado el contenido de los posts:
+
+```typescript
+posts = [{
+    title: 'Tarea pendiente',
+    content: 'Crear el primer test de integración entre dos componentes de Angular'
+  }]
+```
+
+Solo necesitaremos actualizar los mensajes esperados:
+
+```typescript
+    expect(title.textContent).toContain('Tarea pendiente');
+    expect(content.textContent).toContain('Crear el primer test de integración entre dos componentes de Angular');
+
+```
