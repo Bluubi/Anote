@@ -24,7 +24,7 @@
 
     5.2 [Montando el componente PostComponent](#id5.2)
 
-    5.2.1 [Testeando el componente tal cual está](#5.2.1)
+    5.2.1 [Testeando el componente tal cual está](#id5.2.1)
 
     5.2.2 [Probando escenarios: sobreescribir propiedades internas.](#id5.2.2)
 
@@ -1006,11 +1006,15 @@ export const ROUTES: Paths = {
 
   ## 6.2 ¿Qué es RouterTestingHarness?
 
+  <div id='id6.2' />
+
   ``RoutingTestingHarness`` es una **nueva clase** que ha añadido **Angular** a partir de la versión ``15.2``, y que supone
 un reemplazo a la manera que ha tenido desde siempre Angular de hacer testing del Router de sus componentes.
 
 > Fuentes: https://dev.to/this-is-angular/testing-angular-routing-components-with-routertestingharness-providelocationmocks-and-providerouter-oi8#:~:text=RouterTestingHarness%20(introduced%20by%20Angular%20version%2015.2)%20is%20a%20testing%20harness,the%20standalone%20version%20of%20RouterModule.
+> 
 > Youtube: https://youtu.be/RG5iN783rAY?t=430
+> 
 > Documentación oficial: https://angular.io/api/router/testing/RouterTestingHarness
 
   Con ```RouterTestingHarness``` seremos capaces de comprobar, **sin necesidad de mockear el router de nuestra aplicación**, si las rutas funcionan
@@ -1025,8 +1029,9 @@ un reemplazo a la manera que ha tenido desde siempre Angular de hacer testing de
 
   Lo único que tenemos que hacer es utilizar la instrucción ``await RouterTestingHarness.create();`` para crear una **instancia** de esta clase.
 
-![Captura de pantalla 2023-08-12 a las 15.01.28.png](..%2F..%2F..%2FDesktop%2FCaptura%20de%20pantalla%202023-08-12%20a%20las%2015.01.28.png)
-  
+
+<img width="559" alt="Captura de pantalla 2023-08-12 a las 15 01 28" src="https://github.com/Bluubi/Anote/assets/125690321/9000d80a-79c2-459c-9354-48687aabf62e">
+
 
 ## 6.4 Objetivo del test
 
@@ -1046,8 +1051,8 @@ un reemplazo a la manera que ha tenido desde siempre Angular de hacer testing de
 
   Lo primero que tenemos que plantearnos es **quién debe tener el testing**. Todo depende de cómo hayamos planteado nuestra feature, pero en nuestro caso, funciona así:
   
-  ![Captura de pantalla 2023-08-12 a las 16.13.44.png](..%2F..%2F..%2FDesktop%2FCaptura%20de%20pantalla%202023-08-12%20a%20las%2016.13.44.png)
-  
+<img width="555" alt="Captura de pantalla 2023-08-12 a las 16 13 44" src="https://github.com/Bluubi/Anote/assets/125690321/a84d904f-ba7d-4d7e-8565-0d1fce2e785f">
+
   En ```BoardComponent``` se renderizan una lista de posts, que pertenecen a ``PostComponent``. Y es en **ese punto** donde se produce la interacción entre **el click del usuario** y
   la **navegación al post**. El usuario hace **click** en un post, que dispara una función **situada** en ```BoardComponent``` y que éste, a su vez, dispara una función ubicada en ``PostComponent``, que es quien ejecuta
   la navegación.
@@ -1092,10 +1097,7 @@ return { fixture, sut, router }
 ```
 
 > ¡Atención! En este test vamos a utilizar una de las mejoras que presenta ``TestBed``: `autoDetectChanges`.
-> `autoDetectChanges` es una instrucción que permite a TestBed detectar **automáticamente** cualquier cambio que haya disparado
-> el ``detectChanges`` suyo. Con esta instrucción: ``fixture.autoDetectChanges(true);`` no tendremos que volver a preocuparnos de indicar
-> que detecte los cambios.
-
+> `autoDetectChanges` es una instrucción que permite a TestBed detectar **automáticamente** cualquier cambio que haya disparado el ``detectChanges`` suyo. Con esta instrucción: ``fixture.autoDetectChanges(true);`` no tendremos que volver a preocuparnos de indicar que detecte los cambios.
 
 ## 6.6 Ejecución
 
@@ -1224,7 +1226,7 @@ Así que creamos el objeto de estudio:
 ```
 
 > ¡Atención! Lo creamos como ``unknown`` porque, posiblemente, vaya más acorde a la documentación oficial:
-> ![Captura de pantalla 2023-08-12 a las 22.43.51.png](..%2F..%2F..%2FDesktop%2FCaptura%20de%20pantalla%202023-08-12%20a%20las%2022.43.51.png)
+> <img width="460" alt="Captura de pantalla 2023-08-12 a las 22 43 51" src="https://github.com/Bluubi/Anote/assets/125690321/20fcd68a-bd6d-4a1f-a077-2d2a4e15ab8d">
 
 Nuestro ``setup`` queda así:
 
