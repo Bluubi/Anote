@@ -1,17 +1,38 @@
-import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
+import {
+  AfterViewChecked,
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+  Renderer2,
+  ViewChild
+} from '@angular/core';
 import {PostComponent} from "../post/post.component";
+import {NgFor} from "@angular/common";
+import {RouterOutlet} from "@angular/router";
 
 @Component({
   selector: 'app-board',
   templateUrl: './board.component.html',
   standalone: true,
-  imports: [PostComponent],
+  imports: [PostComponent, NgFor, RouterOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./board.component.scss']
 })
-export class BoardComponent  {
+export class BoardComponent {
+
+  @ViewChild('post') post!: PostComponent;
+
   posts = [{
-    title: 'Tarea pendiente',
-    content: 'Crear el primer test de integración entre dos componentes de Angular'
+    title: 'Tarea 1',
+    content: 'Actualizar el README'
+  },
+    {
+    title: 'Tarea 2',
+    content: 'Visualizar un post concreto'
   }]
+
+  render(id: number){
+    this.post.render(id);
+  }
 }

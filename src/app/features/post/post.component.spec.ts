@@ -8,13 +8,18 @@ describe('PostComponent', () => {
 
     fixture.detectChanges();
 
-    const title = fixture.nativeElement.querySelector('.title') as HTMLHeadElement;
-    const content = fixture.nativeElement.querySelector('.content') as HTMLParagraphElement;
+    const title = fixture.nativeElement.querySelectorAll('.title') as HTMLHeadElement[];
+    const content = fixture.nativeElement.querySelectorAll('.content') as HTMLParagraphElement[];
 
-    expect(title.textContent).toContain('Tarea pendiente');
-    expect(content.textContent).toContain('Crear el primer test de integración entre dos componentes de Angular');
+    expect(title[0].textContent).toContain('Tarea 1');
+    expect(content[0].textContent).toContain('Actualizar el README');
+
+    expect(title[1].textContent).toContain('Tarea 2');
+    expect(content[1].textContent).toContain('Visualizar un post concreto');
 
   });
+
+
 });
 
 

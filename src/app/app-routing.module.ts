@@ -4,7 +4,8 @@ import {ROUTES} from "./core/routes";
 
 const routes: Routes = [
   ROUTES['HOME'],
-  ROUTES['HEADER']
+  ROUTES['HEADER'],
+  ROUTES['POST']
 ];
 
 @NgModule({

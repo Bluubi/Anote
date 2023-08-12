@@ -1,21 +1,30 @@
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {
+  AfterContentChecked,
+  AfterViewChecked,
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  Input,
+  Renderer2
+} from '@angular/core';
 import {NgFor} from '@angular/common';
+import {Post} from "./domain/post";
+import {ActivatedRoute, Router, RouterOutlet} from "@angular/router";
 
-
-export interface Posts {
-  title: string,
-  content: string,
-}
 @Component({
   selector: 'app-post',
   standalone: true,
-  imports: [NgFor],
+  imports: [NgFor, RouterOutlet],
   templateUrl: './post.component.html',
   styleUrls: ['./post.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PostComponent {
+export class PostComponent  {
 
-  @Input() posts!: Posts[];
-
+  @Input() post!: Post;
+  router = inject(Router);
+  render(id: number){
+   this.router.navigate(['post', id] );
+  }
 }

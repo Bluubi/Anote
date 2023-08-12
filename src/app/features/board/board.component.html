@@ -1,1 +1,3 @@
-<app-post [posts]="posts"></app-post>
+<ng-container *ngFor="let post of posts; let i = index">
+  <app-post [post]="post" (click)="render(i)" #post></app-post>
+</ng-container>

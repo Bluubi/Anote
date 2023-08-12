@@ -28,10 +28,6 @@
 
     5.2.2 [Probando escenarios: sobreescribir propiedades internas.](#id5.2.2)
 
-<hr>
-
-### Nuevo!
-
 5.3 [Test de props como inputs](#id5.3)
 
 5.4 [Un nuevo enfoque: Testeando con un HostComponent](#id5.4)
@@ -39,6 +35,24 @@
   5.4.1 [Cambiando el punto de vista: Viéndolo _desde_ el padre](#id5.4.1)
 
 <hr>
+
+### Nuevo!
+
+6. [Test de rutas: RouterTestingHarness](#id6)
+
+    6.1 [Algunos cambios](#id6.1)
+
+6.2 [¿Qué es RouterTestingHarness?](#id6.2)
+
+6.3 [Configuración del Router](#id6.3)
+
+6.4 [Objetivo del test](#id6.4)
+
+6.5 [Preparación del escenario](#id6.5)
+
+6.6 [Ejecución](#id6.6)
+
+6.6.1 [Extra: comprobación de la url](#id6.6.1)
 
 <hr>
 
@@ -957,3 +971,369 @@ Solo necesitaremos actualizar los mensajes esperados:
     expect(content.textContent).toContain('Crear el primer test de integración entre dos componentes de Angular');
 
 ```
+
+
+
+## 6. Testing de rutas: RouterTestingHarness
+
+<div id='id6' />
+
+> ¡Atención! Si te fijas, los tests de ``PostComponent`` han cambiado un poco porque se han añadido
+> dos posts al array. Se ha reescrito el primero, y añadido uno nuevo.
+
+
+  ## 6.1 Algunos cambios
+
+<div id='id6.1' />
+
+
+- En esta sección hemos creado un componente nuevo, al que hemos llamado ```FormComponent```, y que se encuentra dentro
+  de ``src/app/features/post/features/form``. También se ha creado una nueva ruta:
+
+```typescript
+export const ROUTES: Paths = {
+    ...
+  POST: { path: 'post', children: [
+      { path: ':id', component: FormComponent }]
+  }
+}
+```
+
+- Se ha redistribuido el contenido HTML de los componentes ``BoardComponent`` y ``PostComponent``
+
+- Desde el componente ```BoardComponent``` se ha añadido una nueva funcionalidad para acceder a cada
+- post de manera concreta: ```render```
+
+  ## 6.2 ¿Qué es RouterTestingHarness?
+
+  ``RoutingTestingHarness`` es una **nueva clase** que ha añadido **Angular** a partir de la versión ``15.2``, y que supone
+un reemplazo a la manera que ha tenido desde siempre Angular de hacer testing del Router de sus componentes.
+
+> Fuentes: https://dev.to/this-is-angular/testing-angular-routing-components-with-routertestingharness-providelocationmocks-and-providerouter-oi8#:~:text=RouterTestingHarness%20(introduced%20by%20Angular%20version%2015.2)%20is%20a%20testing%20harness,the%20standalone%20version%20of%20RouterModule.
+> Youtube: https://youtu.be/RG5iN783rAY?t=430
+> Documentación oficial: https://angular.io/api/router/testing/RouterTestingHarness
+
+  Con ```RouterTestingHarness``` seremos capaces de comprobar, **sin necesidad de mockear el router de nuestra aplicación**, si las rutas funcionan
+  correctamente.
+  
+## 6.3 Configuración del Router
+
+  <div id='id6.3' />
+
+
+  Es muy sencillo. En la propia documentación de Angular se nos explica el proceso para hacerlo.
+
+  Lo único que tenemos que hacer es utilizar la instrucción ``await RouterTestingHarness.create();`` para crear una **instancia** de esta clase.
+
+![Captura de pantalla 2023-08-12 a las 15.01.28.png](..%2F..%2F..%2FDesktop%2FCaptura%20de%20pantalla%202023-08-12%20a%20las%2015.01.28.png)
+  
+
+## 6.4 Objetivo del test
+
+  <div id='id6.4' />
+
+  Lo que pretendemos comprobar es que, cuando el usuario haga click en un post concreto:
+
+  1. Se actualice la ruta correctamente
+  2. Lleve al post del que se ha hecho ```click```.
+
+  Con la ayuda de ```RouterTestingHarness``` será muy sencillo.
+  
+
+## 6.5 Preparación del escenario
+
+  <div id='id6.5' />
+
+  Lo primero que tenemos que plantearnos es **quién debe tener el testing**. Todo depende de cómo hayamos planteado nuestra feature, pero en nuestro caso, funciona así:
+  
+  ![Captura de pantalla 2023-08-12 a las 16.13.44.png](..%2F..%2F..%2FDesktop%2FCaptura%20de%20pantalla%202023-08-12%20a%20las%2016.13.44.png)
+  
+  En ```BoardComponent``` se renderizan una lista de posts, que pertenecen a ``PostComponent``. Y es en **ese punto** donde se produce la interacción entre **el click del usuario** y
+  la **navegación al post**. El usuario hace **click** en un post, que dispara una función **situada** en ```BoardComponent``` y que éste, a su vez, dispara una función ubicada en ``PostComponent``, que es quien ejecuta
+  la navegación.
+
+  Por tanto, lo que nos interesa es ver que, efectivamente, **desde el post renderizado en** ```BoardComponent``` podemos **acceder** a la ruta correcta; no solo eso, sino que **se renderice en pantalla** lo que estamos esperando.
+  Para este escenario tan solo esperamos la navegación y la carga del componente. El contenido de ```FormComponent``` relativo al path ``post/:id`` es muy simple.
+
+  Una vez sabemos esto, acudimos a nuestro fichero `spec` de ``BoardComponent`` y configuramos el módulo para el testing:
+
+`````typescript
+  await TestBed.configureTestingModule({
+    imports: [AppRoutingModule, PostComponent, FormComponent],
+  }).compileComponents();
+`````
+
+  Dentro de los imports tenemos ```AppRoutingModule```. Eso es porque la configuración del ``router`` de nuestra
+aplicación se encuentra en este módulo:
+
+````
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule {
+}
+````
+
+  Y necesitamos los otros dos componentes, ``PostComponent`` y ``FormComponent``, porque de lo contrario:
+  1. No se generarían los posts (dado que se generan gracias a ``PostComponent``) ni podríamos utilizar el método ``render`` de allí.
+  2. No podríamos navegar hasta ``FormComponent`` porque no sería un componente reconocido.
+
+Una vez tenemos nuestro router de testing montado, podemos continuar montando el del router:
+
+```  typescript
+const router = await RouterTestingHarness.create();
+```
+
+Y, de momento, actuar como siempre: devolvemos el ``fixture``, el ``sut`` y el ``router`` creados.
+
+```typescript
+return { fixture, sut, router }
+```
+
+> ¡Atención! En este test vamos a utilizar una de las mejoras que presenta ``TestBed``: `autoDetectChanges`.
+> `autoDetectChanges` es una instrucción que permite a TestBed detectar **automáticamente** cualquier cambio que haya disparado
+> el ``detectChanges`` suyo. Con esta instrucción: ``fixture.autoDetectChanges(true);`` no tendremos que volver a preocuparnos de indicar
+> que detecte los cambios.
+
+
+## 6.6 Ejecución
+
+  <div id='id6.6' />
+
+  Como hemos indicado arriba:
+
+1. El usuario hace click en un post
+
+2. Se activa la función ``render`` de ``BoardComponent``
+
+3. Desde ``render`` se llama a la otra función ``render`` de ``PostComponent``
+
+4. Desde ```PostComponent``` se navega a la ruta ``path/:id`` y al componente ``FormComponent``
+
+
+El **punto 1** sería:
+
+`````typescript
+
+  it('should navigate to concrete post when user click on it', async () => {
+  const { fixture, router } = await setup();
+
+  const post = fixture.nativeElement.querySelector('app-post') as HTMLElement;
+
+  const click = new MouseEvent('click');
+
+  post.dispatchEvent(click);
+  
+})
+`````
+
+  Lo primero es que tenemos que escoger un ``post`` de los renderizados. Podemos coger el primero mismo, y por ello un simple ``querySelector``
+nos sirve. Lo segundo, es que tenemos que **crear** el evento disparador: el **click** del ratón, y hacer que nuestro ``post`` lo lance.
+
+> Puede crearse **cualquier evento** disparado por el usuario:
+> https://developer.mozilla.org/en-US/docs/Web/API/UI_Events
+> 
+> Y "fingir" una acción del usuario mediante ``dispatchEvent(event)``
+> 
+> https://developer.mozilla.org/es/docs/Web/API/EventTarget/dispatchEvent
+
+Hecho esto debería, por lo menos, llamar la función ```render``` de ``BoardComponent``. Podemos comprobarlo espiando el evento:
+
+````
+  it('should navigate to concrete post when user click on it', async () => {
+    const { fixture, sut, router } = await setup();
+
+    const post = fixture.nativeElement.querySelector('app-post') as HTMLElement;
+
+    ---> const renderSpy = jest.spyOn(sut, 'render');
+
+    const click = new MouseEvent('click');
+
+    post.dispatchEvent(click);
+
+    ----> expect(renderSpy).toHaveBeenCalledWith(0)
+  })
+
+````
+
+Espiando la función, podemos comprobar que, efectivamente, es llamada (y con el parámetro correcto). Sin embargo, no necesitamos
+hacer esto, pues al estar probando toda la funcionalidad, indirectamente **ya estamos comprobando** que la función es llamada. Este dato
+se ha nombrado únicamente para poder ir viendo **cómo** vamos bien encaminados.
+
+Continuando con el test, ahora será cuando debamos de hacer uso de nuestra instancia de ``RouterTestingHarness``. Desde esta instancia
+podremos acceder a dos propiedades:
+
+1. ``fixture``
+2. ``routeNativeElement``
+
+Al igual que ocurre cuando creamos una instancia mediante ``TestBed.configureRoutingModule``, obtenemos
+una especie de **wrapper** del HTML (el ```<router-outlet>``` al que se ha redirigido) y los métodos del router
+(como ``navigateByUrl``, por ejemplo).
+
+En cuento a ``routerNativeElement``:
+
+>> The resolved RouterTestingHarness instance has the properties routeDebugElement 
+>> and routeNativeElement which access the DebugElement and HTMLElement corresponding 
+>> to the component currently activated by the test root component's RouterOutlet.
+
+Es decir, que mediante ``routerNativeElement`` podremos **acceder** al `router-outlet` activado por la
+navegación, devolviéndonoslo en un elemento HTML.
+
+Si imprimimos la siguiente instrucción:
+
+```typescript
+    console.log(router.routeNativeElement?.outerHTML);
+```
+
+tras haber hecho:
+
+```typescript
+     post.dispatchEvent(click);
+```
+
+veremos la siguiente impresión:
+
+````typescript
+
+    <app-form>
+    <p>form works!</p><router-outlet name="form" ng-reflect-name="form">
+    </router-outlet><!--container-->
+    </app-form>
+
+````
+
+Es decir, tenemos la **confirmación** de que no solo ha podido navegar correcta, sino de que se
+ha cargado el componente **correcto**. Incluso podemos confirmar que **lo que se vea** concuerda
+con lo que esperamos.
+
+Pero, sin embargo, si intentamos recoger el elemento HTML mediante un ``querySelector``...
+
+```  console.log(router.routeNativeElement?.querySelector('app-form')) ```
+
+Veremos que nos devuelve un ``null``. Por lo tanto, ``routeNativeElement`` no nos sirve para testing,
+así que utilizaremos el **wrapper**, al igual que en el caso de ``TestBed.configureTestingModule``:
+
+``` router.fixture ```
+
+Así que creamos el objeto de estudio:
+
+```typescript
+  const router = routerFixture.fixture as ComponentFixture<unknown>;
+
+```
+
+> ¡Atención! Lo creamos como ``unknown`` porque, posiblemente, vaya más acorde a la documentación oficial:
+> ![Captura de pantalla 2023-08-12 a las 22.43.51.png](..%2F..%2F..%2FDesktop%2FCaptura%20de%20pantalla%202023-08-12%20a%20las%2022.43.51.png)
+
+Nuestro ``setup`` queda así:
+
+`````typescript
+async function setup() {
+
+  await TestBed.configureTestingModule({
+    imports: [AppRoutingModule, PostComponent, FormComponent],
+  }).compileComponents();
+
+  const routerFixture = await RouterTestingHarness.create();
+
+  const router = routerFixture.fixture as ComponentFixture<unknown>;
+  const fixture = TestBed.createComponent(BoardComponent);
+  const sut = fixture.componentInstance;
+
+  fixture.autoDetectChanges(true);
+
+  return { fixture, sut, router }
+}
+
+`````
+
+Y nuestro test continúa de la siguiente manera:
+
+````typescript
+  it('should navigate to concrete post when user click on it', async () => {
+    const { fixture, router } = await setup();
+
+    const post = fixture.nativeElement.querySelector('app-post') as HTMLElement;
+
+    const click = new MouseEvent('click');
+
+    post.dispatchEvent(click);
+
+    const form = router.nativeElement.querySelector('app-form');
+
+    expect(form).toBeDefined();
+  })
+````
+
+### 6.6.1 Extra: comprobación de la url
+
+  <div id='id6.6.1' />
+
+  Para terminar de asegurarnos de que la navegación ha sido exitosa, podemos complementarlo comprobando que la URl sea la esperada.
+
+  Si repasamos el método ``render``:
+
+```typescript
+
+    BoardComponent
+
+  render(id: number){
+    this.post.render(id);
+  }
+```
+
+  Vemos que se envía el ``id`` asociado al post. 
+  Y luego en ```PostComponent```:
+
+```typescript
+
+    PostComponent
+
+    render(id: number){
+      this.router.navigate(['post', id] );
+    }
+```
+
+vemos que se navega hacia el post, y se le pasa por ``queryParam`` el ``id`` del mismo.
+
+Para comprobar que la url es la esperada, podemos utilizar la siguiente instrucción:
+
+``const routerDI = TestBed.inject(Router);``
+
+
+> ¡Atención! Si miras en tutoriales de internet, verás que la mayoría utilizan ``Location`` para comprobar
+> la localización:
+>  ```typescript
+>   const location = TestBed.inject(Location);
+>  ```
+>  Pero si utilizamos ese servicio, nos dará fallo por ```NullInjection```.
+> Al contrario que con la inyección del ``Router``, dado que ya tenemos su inyección
+> hecha en ```AppRoutingModule```, no nos dará fallo.
+
+Y, a continuación, utilizar:
+
+```typescript
+    expect(routerDI.url).toEqual('/post/0')
+```
+
+El test queda así completo:
+
+````typescript
+  it('should navigate to concrete post when user click on it', async () => {
+  const { fixture, router } = await setup();
+
+  const post = fixture.nativeElement.querySelector('app-post') as HTMLElement;
+
+  const routerDI = TestBed.inject(Router);
+
+
+  const click = new MouseEvent('click');
+  post.dispatchEvent(click);
+
+  const form = router.nativeElement.querySelector('app-form');
+
+  expect(form).toBeDefined();
+  expect(routerDI.url).toEqual('/post/0')
+})
+````
